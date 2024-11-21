@@ -1,0 +1,3 @@
+# SubMegaByte-Implementations
+
+Mostly PyTorch implementations of AI research papers among other things...
