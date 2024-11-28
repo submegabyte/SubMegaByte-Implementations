@@ -1,4 +1,4 @@
-from model3 import Mamba, Config
+from model5 import Mamba, Config
 from transformers import AutoTokenizer
 
 # One of:

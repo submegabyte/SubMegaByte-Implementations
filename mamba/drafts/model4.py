@@ -136,7 +136,7 @@ class Mamba(nn.Module):
         for key in state_dict:
             new_key = key.replace('backbone.', '')
             new_state_dict[new_key] = state_dict[key]
-        print(len(new_state_dict))
+        # print(len(new_state_dict))
         model.load_state_dict(new_state_dict)
         
         return model
