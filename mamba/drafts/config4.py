@@ -5,7 +5,8 @@ from typing import Union
 @dataclass
 class Config:
     d_model: int # D
-    n_layers: int
+    n_layer: int
+
     vocab_size: int
     
     dt_rank: Union[int, str] = 'auto'
@@ -22,6 +23,8 @@ class Config:
 
     rms_norm_eps: float = 1e-5
     base_std: float = 0.02
+
+    pad_vocab_size_multiple: int = 8
 
     bias: bool = False
     conv_bias: bool = True
@@ -42,3 +45,7 @@ class Config:
         # muP
         if self.mup:
             self.mup_width_mult = self.d_model / self.mup_base_width
+
+        if self.vocab_size % self.pad_vocab_size_multiple != 0:
+            self.vocab_size += (self.pad_vocab_size_multiple
+                                - self.vocab_size % self.pad_vocab_size_multiple)

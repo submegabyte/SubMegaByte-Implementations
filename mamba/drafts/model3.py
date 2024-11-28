@@ -21,7 +21,7 @@ class Mamba(nn.Module):
         self.config = config
         
         self.embedding = nn.Embedding(config.vocab_size, config.d_model)
-        self.layers = nn.ModuleList([ResidualBlock(config) for _ in range(config.n_layers)])
+        self.layers = nn.ModuleList([ResidualBlock(config) for _ in range(config.n_layer)])
         self.norm_f = RMSNorm(config.d_model)
 
         self.lm_head = nn.Linear(config.d_model, config.vocab_size, bias=False)
@@ -42,7 +42,7 @@ class Mamba(nn.Module):
         x = self.norm_f(x)
         logits = self.lm_head(x)
 
-        return x
+        return logits
     
     def step(self, x, caches):
         # x : (B, L, D)
@@ -90,7 +90,7 @@ class Mamba(nn.Module):
         config_data = load_config_hf(pretrained_model_name)
         args = Config(
             d_model=config_data['d_model'],
-            n_layers=config_data['n_layer'],
+            n_layer=config_data['n_layer'],
             vocab_size=config_data['vocab_size']
         )
         model = Mamba(args)
@@ -109,7 +109,8 @@ class ResidualBlock(nn.Module):
         super().__init__()
 
         self.mixer = MambaBlock(config)
-        self.norm = RMSNorm(config.d_model, config.rms_norm_eps, config.mup)
+        # self.norm = RMSNorm(config.d_model, config.rms_norm_eps, config.mup)
+        self.norm = RMSNorm(config.d_model)
 
     def forward(self, x):
         # x : (B, L, D)
@@ -183,15 +184,15 @@ class MambaBlock(nn.Module):
         # projects block output from ED back to D
         self.out_proj = nn.Linear(config.d_inner, config.d_model, bias=config.bias)
 
-        # used in jamba
-        if self.config.inner_layernorms:
-            self.dt_layernorm = RMSNorm(self.config.dt_rank, config.rms_norm_eps, config.mup)
-            self.B_layernorm = RMSNorm(self.config.d_state, config.rms_norm_eps, config.mup)
-            self.C_layernorm = RMSNorm(self.config.d_state, config.rms_norm_eps, config.mup)
-        else:
-            self.dt_layernorm = None
-            self.B_layernorm = None
-            self.C_layernorm = None
+        # # used in jamba
+        # if self.config.inner_layernorms:
+        #     self.dt_layernorm = RMSNorm(self.config.dt_rank, config.rms_norm_eps, config.mup)
+        #     self.B_layernorm = RMSNorm(self.config.d_state, config.rms_norm_eps, config.mup)
+        #     self.C_layernorm = RMSNorm(self.config.d_state, config.rms_norm_eps, config.mup)
+        # else:
+        #     self.dt_layernorm = None
+        #     self.B_layernorm = None
+        #     self.C_layernorm = None
 
         if self.config.use_cuda:
             try:
@@ -202,14 +203,14 @@ class MambaBlock(nn.Module):
                 print("Failed to import mamba_ssm. Falling back to mamba.py.")
                 self.config.use_cuda = False
 
-    def _apply_layernorms(self, dt, B, C):
-        if self.dt_layernorm is not None:
-            dt = self.dt_layernorm(dt)
-        if self.B_layernorm is not None:
-            B = self.B_layernorm(B)
-        if self.C_layernorm is not None:
-            C = self.C_layernorm(C)
-        return dt, B, C
+    # def _apply_layernorms(self, dt, B, C):
+    #     if self.dt_layernorm is not None:
+    #         dt = self.dt_layernorm(dt)
+    #     if self.B_layernorm is not None:
+    #         B = self.B_layernorm(B)
+    #     if self.C_layernorm is not None:
+    #         C = self.C_layernorm(C)
+    #     return dt, B, C
 
     def forward(self, x):
         # x : (B, L, D)
@@ -252,7 +253,7 @@ class MambaBlock(nn.Module):
 
         deltaBC = self.x_proj(x) # (B, L, dt_rank+2*N)
         delta, B, C = torch.split(deltaBC, [self.config.dt_rank, self.config.d_state, self.config.d_state], dim=-1) # (B, L, dt_rank), (B, L, N), (B, L, N)
-        delta, B, C = self._apply_layernorms(delta, B, C)
+        # delta, B, C = self._apply_layernorms(delta, B, C)
         delta = self.dt_proj.weight @ delta.transpose(1, 2) # (ED, dt_rank) @ (B, L, dt_rank) -> (B, ED, L)
         # here we just apply the matrix mul operation of delta = softplus(dt_proj(delta))
         # the rest will be applied later (fused if using cuda)
