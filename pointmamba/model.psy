@@ -1,0 +1,25 @@
+## Farthest point sampling
+## (M, 3)
+p = fps(p)
+## (n, 3)
+
+## serialization using hilbert/trans-hilbert curves
+ph, ph1 = serialize(p)
+## (n, 3)
+
+## knn pointcloud token patches
+## patch size k
+# pk = knn(p)
+Th = knn(ph, k)
+Th1 = knn(ph1, k)
+## (n, k, 3)
+
+## patchwise (not pointwise) pointnet features
+Eh_0 = pointnet(Th)
+Eh1_0 = pointnet(Th1)
+## (n, C)
+
+## order indicator
+## scale and shift, linear transformation
+Zh_0 = Eh_0 (.) gh + bh
+Zh1_0 = Eh1_0 (.) gh1 + bh1
