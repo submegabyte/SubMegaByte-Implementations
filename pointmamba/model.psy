@@ -1,6 +1,6 @@
-## Farthest point sampling
+## Farthest point sampling (FPS)
 ## (M, 3)
-p = fps(p)
+p = fps(P)
 ## (n, 3)
 
 ## serialization using hilbert/trans-hilbert curves
@@ -10,8 +10,8 @@ ph, ph1 = serialize(p)
 ## knn pointcloud token patches
 ## patch size k
 # pk = knn(p)
-Th = knn(ph, k)
-Th1 = knn(ph1, k)
+Th = knn(ph, P, k)
+Th1 = knn(ph1, P, k)
 ## (n, k, 3)
 
 ## patchwise (not pointwise) pointnet features
@@ -23,3 +23,18 @@ Eh1_0 = pointnet(Th1)
 ## scale and shift, linear transformation
 Zh_0 = Eh_0 (.) gh + bh
 Zh1_0 = Eh1_0 (.) gh1 + bh1
+## (n, C)
+
+## concatenate
+Z_0 = Zh_0 concat Zh1_0
+## (2n, C)
+
+## mamba, sequentially n times
+repeat(N) {
+    ## Z_(l-1) --mamba_l--> Z_l
+    Z1_(l-1) = layernorm Z_(l-1)
+    Z1_l = silu <- dwconv <- linear Z1_(l-1)
+    Z11_l = silu <- linear Z1_(l-1)
+    Z_l = linear ( selective_ssm Z1_l (.) Z11_l ) + Z_(l-1)
+    ## (2n, C)
+}

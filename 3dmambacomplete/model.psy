@@ -1,0 +1,11 @@
+Pp = FPS(P)
+## (N, 3)
+
+Fp = EndgConv(P, Pp)
+## (N, C)
+
+## Zp in the paper, fixing inconsistent notation
+Zp_0 = Pp concat Fp
+## (N, C+3)
+
+Zp_i = mamba Zp_(i-1)

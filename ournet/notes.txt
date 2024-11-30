@@ -1,0 +1,54 @@
+Idea
+View guided Mamba-Transformer point cloud completion
+View guided block-state point cloud completion
+
+pointnet, vipc only use point and global features
+
+pointmae, pointmamba, pointramba extend pointnet by incorporating
+local patch features. we can do the same for vipc
+
+3dmambacomplete doesn't utilize an image view, instead creates
+hyperpoints and disperses them, which makes the model rigid
+
+mamba ordering
+we can use bio from pointramba
+
+pointmae's robustness to missing patches
+
+vipc's ability to fill missing information from an image reference
+
+large data efficiency from mamba
+
+self-attention from vision transfomer (used in pointmae, )
+
+cross-attention from block-state transformer
+
+---------------
+
+transformer + bio for mamba input ordering
+
+mamba for processing all the patches together from image and pointcloud
+basically add context across all input
+
+self attention b/w patches of the pointcloud for robustness (from pointmae)
+cross attention from image to pointcloud to fill missing info
+
+----------------
+
+generate input embeddings
+
+ordering
+
+mamba context
+
+self attention
+cross attention
+
+decode
+
+----------------
+
+FPS and KNN
+
+pointcloud patches
+
