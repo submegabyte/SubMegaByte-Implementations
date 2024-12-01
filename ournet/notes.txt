@@ -10,7 +10,7 @@ local patch features. we can do the same for vipc
 3dmambacomplete doesn't utilize an image view, instead creates
 hyperpoints and disperses them, which makes the model rigid
 
-mamba ordering
+mamba ordering/sequence/scan
 we can use bio from pointramba
 
 pointmae's robustness to missing patches
@@ -35,6 +35,21 @@ cross attention from image to pointcloud to fill missing info
 
 ----------------
 
+mamba was introduced as an quicker alternative to self attention,
+no strong cross attention references yet
+https://github.com/state-spaces/mamba/issues/229
+
+mamba for long input encoding to learn contextual cues
+
+then use block-state transformer for shorter input chunks
+to get cross attention and short chunk self attention
+
+types of cross attention
+1. two point clouds
+2. one point cloud, one image
+
+----------------
+
 generate input embeddings
 
 ordering
@@ -48,7 +63,37 @@ decode
 
 ----------------
 
-FPS and KNN
+image
+b c h w
 
-pointcloud patches
+image patch
+b c hp wp
 
+patches per image
+h/ph * w/pw 
+
+patch embedding
+b e
+
+patch encoder:
+self-attention vit blocks
+
+----------------
+
+pointcloud
+b n 3
+
+pointcloud patch (KNN)
+b k 3
+
+patch embedding
+b e
+
+-----------------
+
+sfe and sftnet
+
+vit was used in egiinet
+can replace with block-state transformer
+
+don't forget mae strengthening
